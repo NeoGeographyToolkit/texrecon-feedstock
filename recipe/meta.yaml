@@ -1,0 +1,73 @@
+{% set name = "texrecon" %}
+{% set version = "0.1.0" %}
+
+package:
+  name: {{ name|lower }}
+  version: {{ version }}
+
+# ASP MultiView breakup: the texturing stack (mve + texrecon, with mapmap and
+# rayint as texrecon build deps) built as ONE conda package. Source folders are
+# assembled into a MultiView-style sibling layout and built with a trimmed
+# top-level CMakeLists vendored in this recipe (mve_texrecon_CMakeLists.txt).
+# SHAs match the MultiView submodule pins (2026-06-05).
+source:
+  - folder: mve
+    url: https://github.com/NeoGeographyToolkit/mve/archive/9842b00de16afa56d2768b91ab4663573b0452c3.tar.gz
+    sha256: 099a6cc17a81be3577ee1c7d6b24ddba72480a543db3f3630426fdc6429b3def
+  - folder: mapmap
+    url: https://github.com/NeoGeographyToolkit/mapmap_cpu/archive/79ec827ec506a9831d30bbb461b02cbbea10255b.tar.gz
+    sha256: 8d995eef428c5a2382594cdc58ce81715292190c75e522f024619c0779f17d9a
+  - folder: rayint
+    url: https://github.com/NeoGeographyToolkit/rayint/archive/94c4d7357eb1f08e5e1144d34719cec3a899274d.tar.gz
+    sha256: 1f5241d184f7d381bc4340ffc4135d005849ecedbf41a760849d9e207d7812a2
+  - folder: texrecon
+    url: https://github.com/NeoGeographyToolkit/mvs-texturing/archive/0c9626552b1c7ab244fc64736a9738f57a452d13.tar.gz
+    sha256: ac4efeed068a41c8695b3d12734a7be21a483a54414809530d7c6fe2cde32df8
+
+build:
+  number: 0
+  string: asp_0      # ASP channel marker; bump to re-spin (append-only)
+  skip: true  # [win]
+
+requirements:
+  build:
+    - {{ compiler('c') }}
+    - {{ compiler('cxx') }}
+    - cmake
+    - make
+  host:
+    - libpng
+    - zlib          # headers (zlib.h) for FindZLIB/FindPNG; libpng only pulls
+                    # libzlib (runtime), so without this PNG/ZLIB are not found
+    - libjpeg-turbo
+    - libtiff
+    - eigen >=3,<4
+    # tbb pinned to the asp_deps/ISIS version (2023.0.0). tbb-devel is host-only
+    # (build headers + TBB::tbb cmake target); run keeps plain tbb -> libtbb.so,
+    # avoiding the libtbbmalloc_proxy exit-time crash (cross-bot sync gotcha).
+    - tbb 2023.*
+    - tbb-devel 2023.*
+    - llvm-openmp  # [osx]
+  run:
+    - libpng
+    - libjpeg-turbo
+    - libtiff
+    - tbb 2023.*
+
+test:
+  commands:
+    # The texrecon app target is named texrecon_bin (apps/texrecon/CMakeLists).
+    - test -e $PREFIX/bin/texrecon_bin                              # [unix]
+    - test -e $PREFIX/lib/libtexture_reconstruction${SHLIB_EXT}     # [unix]
+    - test -e $PREFIX/lib/libmveCore${SHLIB_EXT}                    # [unix]
+    - test -e $PREFIX/lib/libmveUtil${SHLIB_EXT}                    # [unix]
+
+about:
+  home: https://github.com/NeoGeographyToolkit/mvs-texturing
+  license: BSD-3-Clause
+  license_file: texrecon/LICENSE.txt
+  summary: "texrecon (mvs-texturing) plus the MVE libraries and rayint headers it needs. Mesh texturing for the Ames Stereo Pipeline."
+
+extra:
+  recipe-maintainers:
+    - oleg-alexandrov

@@ -1,0 +1,9 @@
+# Keep compilers not-too-new. ISIS toolchain is cxx-compiler 1.9 =>
+# clang 18 on osx, gcc 13.4 on linux (incl. linux-aarch64; gxx 18 does not
+# exist for gcc). Newer gcc (14/15) risks libstdcxx CXXABI breakage.
+c_compiler_version:
+  - "18"   # [osx]
+  - "13"   # [linux]
+cxx_compiler_version:
+  - "18"   # [osx]
+  - "13"   # [linux]
