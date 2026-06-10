@@ -25,8 +25,8 @@ source:
     sha256: ac4efeed068a41c8695b3d12734a7be21a483a54414809530d7c6fe2cde32df8
 
 build:
-  number: 1
-  string: asp_1      # ASP channel marker; bump to re-spin (append-only)
+  number: 2
+  string: asp_2      # ASP channel marker; bump to re-spin (append-only)
   skip: true  # [win]
 
 requirements:
